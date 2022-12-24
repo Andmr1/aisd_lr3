@@ -6,7 +6,6 @@ template <typename T>
 class matrix
 {
 	std::vector<std::vector<T>> _data;
-	size_t _columns;
 public:
 	template<typename T1>friend std::ostream& operator<<(std::ostream& s, matrix<T1> a);
 	matrix(size_t rows=0,size_t columns=0, bool ask = false)
@@ -27,14 +26,16 @@ public:
 			for (size_t j = 0; j < columns; ++j)
 			{
 				T val = 0;
-				std::cout << "val[" << i << "][" << j << "]:= ";
-				std::cin >> val;
+				if (ask == true)
+				{
+					std::cout << "val[" << i << "][" << j << "]:= ";
+					std::cin >> val;
+				}
 				dt.push_back(val);
 			}
 			data.push_back(dt);
 		}
 		_data = data;
-		_columns = columns;
 	}
 	int begin()
 	{
@@ -64,7 +65,7 @@ public:
 		matrix b = *this;
 		for (size_t i = 0; i < b._data.size(); ++i)
 		{
-			for (size_t j = 0; j < b._columns; ++j)
+			for (size_t j = 0; j < b._data[0].size(); ++j)
 			{
 				b._data[i][j] += a._data[i][j];
 			}
@@ -73,13 +74,13 @@ public:
 	}
 	matrix& operator +=(const matrix b)
 	{
-		if (_data.size != b._data.size() || _columns != b._columns)
+		if (_data.size != b._data.size() || _data[0].size() != b._data[0].size())
 		{
 			throw("Invalid sizes");
 		}
 		for (size_t i = 0; i < _data.size(); ++i)
 		{
-			for (size_t j = 0; j < _columns; ++j)
+			for (size_t j = 0; j < _data[0].size(); ++j)
 			{
 				this->_data[i][j] += b._data[i][j];
 			}
@@ -88,14 +89,14 @@ public:
 	}
 	matrix operator - (const matrix& a)const
 	{
-		if (_data.size() != a._data.size() || _columns != a._columns)
+		if (_data.size() != a._data.size() || _data[0].size() != a._data[0].size())
 		{
 			throw("Invalid sizes");
 		}
 		matrix b = *this;
 		for (size_t i = 0; i < a._data.size(); ++i)
 		{
-			for (size_t j = 0; j < b._columns; ++j)
+			for (size_t j = 0; j < b._data[0].size(); ++j)
 			{
 				b._data[i][j] -= a._data[i][j];
 			}
@@ -111,7 +112,7 @@ public:
 		matrix b = *this;
 		for (size_t i = 0; i < b._data.size(); ++i)
 		{
-			for (size_t j = 0; j < b._columns; ++j)
+			for (size_t j = 0; j < b._data[0].size(); ++j)
 			{
 				b._data[i][j] /= val;
 			}
@@ -123,7 +124,7 @@ public:
 		matrix b = *this;
 		for (size_t i = 0; i < b._data.size(); ++i)
 		{
-			for (size_t j = 0; j < b._columns; ++j)
+			for (size_t j = 0; j < b._data[0].size(); ++j)
 			{
 				b._data[i][j] *= val;
 			}
@@ -137,12 +138,12 @@ public:
 			throw("Invalid sizes");
 		}
 		matrix b = *this;
-		matrix c(b._data.size(), a._columns, 0);
+		matrix c(b._data.size(), a._data[0].size(), false);
 		for (size_t i = 0; i < b._data.size(); ++i)
 		{
-			for (size_t j = 0; j < a._columns; ++j)
+			for (size_t j = 0; j < a._data[0].size(); ++j)
 			{
-				for (size_t k = 0; k < b._columns; ++k)
+				for (size_t k = 0; k < b._data[0].size(); ++k)
 				{
 					c._data[i][j] += b._data[i][k] * a._data[k][j];
 				}
@@ -152,7 +153,7 @@ public:
 	}
 	T trail()const
 	{
-		if (_data.size() != _columns)
+		if (_data.size() != _data[0].size())
 		{
 			throw("This matrix is not square");
 		}
@@ -165,7 +166,7 @@ public:
 	}
 	matrix inversion()const
 	{
-		if (_data.size() != _columns)
+		if (_data.size() != _data[0].size())
 		{
 			throw("Only for square matrix");
 		}
@@ -174,7 +175,7 @@ public:
 		matrix b = a;
 		for (size_t i = 0; i < a._data.size(); ++i)
 		{
-			for (size_t j = 0; j < a._columns; ++j)
+			for (size_t j = 0; j < a._data[0].size(); ++j)
 			{
 				b._data[i][j] = 0;
 				if (i == j)b._data[i][j] = 1;
@@ -214,13 +215,13 @@ public:
 	}
 	bool operator ==(const matrix& b)const
 	{
-		if (_data.size() != b._data.size() || _columns != b._columns)
+		if (_data.size() != b._data.size() || _data[0].size() != b._data[0].size())
 		{
 			return false;
 		}
 		for (size_t i = 0; i < _data.size(); ++i)
 		{
-			for (size_t j = 0; j < _columns; ++j)
+			for (size_t j = 0; j < _data[0].size(); ++j)
 			{
 				if (_data[i][j] != b._data[i][j])
 				{
@@ -258,7 +259,7 @@ template<> matrix<std::complex<double>> matrix<std::complex<double>>::operator/(
 	matrix<std::complex<double>> b = *this;
 	for (size_t i = 0; i < b._data.size(); ++i)
 	{
-		for (size_t j = 0; j < b._columns; ++j)
+		for (size_t j = 0; j < b._data.size(); ++j)
 		{
 			b._data[i][j] /= val;
 		}
@@ -274,7 +275,7 @@ template<> matrix<std::complex<float>> matrix<std::complex<float>>::operator/(st
 	matrix<std::complex<float>> b = *this;
 	for (size_t i = 0; i < b._data.size(); ++i)
 	{
-		for (size_t j = 0; j < b._columns; ++j)
+		for (size_t j = 0; j < b._data[0].size(); ++j)
 		{
 			b._data[i][j] /= val;
 		}
@@ -343,7 +344,7 @@ int main()
 					break;
 					case 2:
 					{
-						std::cout << a1.trail();
+						std::cout <<std::endl<< a1.trail()<<std::endl;
 					}
 					break;
 					case 3:
@@ -427,16 +428,16 @@ int main()
 					case 9:
 					{
 						bool call = false;
-						std::cout << "call: 1" << std::endl << "change: 2" << std::endl;
+						std::cout << "call: 0" << std::endl << "change: 1" << std::endl;
 						std::cout << "choise: ";
 						std::cin >> call;
 						std::cout << std::endl;
 						switch (call)
 						{
-						case 1:
+						case 0:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -450,10 +451,10 @@ int main()
 							}
 						}
 						break;
-						case 2:
+						case 1:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -470,8 +471,8 @@ int main()
 								std::cout << err;
 							}
 						}
-						}
 						break;
+						}
 					}
 					break;
 					case 10:
@@ -480,7 +481,6 @@ int main()
 						bool c = a1 == b1;
 						std::cout << c << std::endl;
 					}
-					break;
 					break;
 					case 11:
 						loop_int = 1;
@@ -506,7 +506,7 @@ int main()
 					break;
 					case 2:
 					{
-						std::cout << a2.trail();
+						std::cout <<std::endl<< a2.trail()<<std::endl;
 					}
 					break;
 					case 3:
@@ -590,16 +590,16 @@ int main()
 					case 9:
 					{
 						bool call = false;
-						std::cout << "call: 1" << std::endl << "change: 2" << std::endl;
+						std::cout << "call: 0" << std::endl << "change: 1" << std::endl;
 						std::cout << "choise: ";
 						std::cin >> call;
 						std::cout << std::endl;
 						switch (call)
 						{
-						case 1:
+						case 0:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -613,7 +613,7 @@ int main()
 							}
 						}
 						break;
-						case 2:
+						case 1:
 						{
 							size_t row, column;
 							std::cout << "Row; ";
@@ -633,8 +633,8 @@ int main()
 								std::cout << err;
 							}
 						}
-						}
 						break;
+						}
 					}
 					break;
 					case 10:
@@ -669,7 +669,7 @@ int main()
 					break;
 					case 2:
 					{
-						std::cout << a3.trail();
+						std::cout <<std::endl<< a3.trail()<<std::endl;
 					}
 					break;
 					case 3:
@@ -753,16 +753,16 @@ int main()
 					case 9:
 					{
 						bool call = false;
-						std::cout << "call: 1" << std::endl << "change: 2" << std::endl;
+						std::cout << "call: 0" << std::endl << "change: 1" << std::endl;
 						std::cout << "choise: ";
 						std::cin >> call;
 						std::cout << std::endl;
 						switch (call)
 						{
-						case 1:
+						case 0:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -776,7 +776,7 @@ int main()
 							}
 						}
 						break;
-						case 2:
+						case 1:
 						{
 							size_t row, column;
 							std::cout << "Row; ";
@@ -796,8 +796,8 @@ int main()
 								std::cout << err;
 							}
 						}
-						}
 						break;
+						}
 					}
 					break;
 					case 10:
@@ -806,7 +806,6 @@ int main()
 						bool c = a3 == b1;
 						std::cout << c << std::endl;
 					}
-					break;
 					break;
 					case 11:
 						loop_double = 1;
@@ -832,7 +831,7 @@ int main()
 					break;
 					case 2:
 					{
-						std::cout << a4.trail();
+						std::cout <<std::endl<< a4.trail()<<std::endl;
 					}
 					break;
 					case 3:
@@ -922,10 +921,10 @@ int main()
 						std::cout << std::endl;
 						switch (call)
 						{
-						case 1:
+						case 0:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -939,10 +938,10 @@ int main()
 							}
 						}
 						break;
-						case 2:
+						case 1:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -959,8 +958,8 @@ int main()
 								std::cout << err;
 							}
 						}
-						}
 						break;
+						}
 					}
 					break;
 					case 10:
@@ -969,7 +968,6 @@ int main()
 						bool c = a4 == b1;
 						std::cout << c << std::endl;
 					}
-					break;
 					break;
 					case 11:
 						loop_cfloat = 1;
@@ -995,7 +993,7 @@ int main()
 					break;
 					case 2:
 					{
-						std::cout << a5.trail();
+						std::cout <<std::endl<< a5.trail()<<std::endl;
 					}
 					break;
 					case 3:
@@ -1079,16 +1077,16 @@ int main()
 					case 9:
 					{
 						bool call = false;
-						std::cout << "call: 1" << std::endl << "change: 2" << std::endl;
+						std::cout << "call: 0" << std::endl << "change: 1" << std::endl;
 						std::cout << "choise: ";
 						std::cin >> call;
 						std::cout << std::endl;
 						switch (call)
 						{
-						case 1:
+						case 0:
 						{
 							size_t row, column;
-							std::cout << "Row; ";
+							std::cout << "Row: ";
 							std::cin >> row;
 							std::cout << std::endl << "Column: ";
 							std::cin >> column;
@@ -1102,7 +1100,7 @@ int main()
 							}
 						}
 						break;
-						case 2:
+						case 1:
 						{
 							size_t row, column;
 							std::cout << "Row; ";
@@ -1122,8 +1120,8 @@ int main()
 								std::cout << err;
 							}
 						}
-						}
 						break;
+						}
 					}
 					break;
 					case 10:
@@ -1132,7 +1130,6 @@ int main()
 						bool c = a5 == b1;
 						std::cout << c << std::endl;
 					}
-					break;
 					break;
 					case 11:
 						loop_cdouble = 1;
